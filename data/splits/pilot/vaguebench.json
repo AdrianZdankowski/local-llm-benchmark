@@ -1,0 +1,40 @@
+{
+  "source": "vaguebench",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 7 whole scenarios (x A/B/C), strata = query_type",
+  "strata": {
+    "A|Consultation & Analysis": 4,
+    "A|Information Query": 2,
+    "A|Recommendation & Decision": 1,
+    "B|Consultation & Analysis": 4,
+    "B|Information Query": 2,
+    "B|Recommendation & Decision": 1,
+    "C|Consultation & Analysis": 4,
+    "C|Information Query": 2,
+    "C|Recommendation & Decision": 1
+  },
+  "source_version": "sha256:77d025b671d83a0c",
+  "ids": [
+    "vaguebench-002ed1be-7f54-4ff8-9a0a-3920756474c4_A",
+    "vaguebench-002ed1be-7f54-4ff8-9a0a-3920756474c4_B",
+    "vaguebench-002ed1be-7f54-4ff8-9a0a-3920756474c4_C",
+    "vaguebench-84b3d79a-6ea2-468d-8912-8074fffd7255_A",
+    "vaguebench-84b3d79a-6ea2-468d-8912-8074fffd7255_B",
+    "vaguebench-84b3d79a-6ea2-468d-8912-8074fffd7255_C",
+    "vaguebench-869de482-9158-46ca-a552-cfd4e520cffa_A",
+    "vaguebench-869de482-9158-46ca-a552-cfd4e520cffa_B",
+    "vaguebench-869de482-9158-46ca-a552-cfd4e520cffa_C",
+    "vaguebench-8f74c0f1-6a49-4980-a17b-0c0d2f368751_A",
+    "vaguebench-8f74c0f1-6a49-4980-a17b-0c0d2f368751_B",
+    "vaguebench-8f74c0f1-6a49-4980-a17b-0c0d2f368751_C",
+    "vaguebench-ba77792d-d1b1-4956-b743-a5022e1dbe85_A",
+    "vaguebench-ba77792d-d1b1-4956-b743-a5022e1dbe85_B",
+    "vaguebench-ba77792d-d1b1-4956-b743-a5022e1dbe85_C",
+    "vaguebench-e65d5993-87f2-493d-bf25-875571fe90b9_A",
+    "vaguebench-e65d5993-87f2-493d-bf25-875571fe90b9_B",
+    "vaguebench-e65d5993-87f2-493d-bf25-875571fe90b9_C",
+    "vaguebench-ec02e159-6664-4ace-86db-06a93f32b5c4_A",
+    "vaguebench-ec02e159-6664-4ace-86db-06a93f32b5c4_B",
+    "vaguebench-ec02e159-6664-4ace-86db-06a93f32b5c4_C"
+  ]
+}

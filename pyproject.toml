@@ -5,6 +5,11 @@ description = "Benchmark lokalnych LLM (Qwen3, Gemma 4)"
 requires-python = ">=3.11"
 dependencies = ["pydantic>=2", "matplotlib>=3.8"]
 
+[project.optional-dependencies]
+# scripts/score.py; the runner and aggregate.py need only the standard library.
+scoring-listqa = ["evaluate", "rouge-score", "scipy", "nltk", "absl-py"]
+scoring-ideafix = ["sentence-transformers", "transformers", "torch", "spacy", "numpy"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

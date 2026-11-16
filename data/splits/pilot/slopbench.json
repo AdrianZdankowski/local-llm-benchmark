@@ -1,0 +1,18 @@
+{
+  "source": "slopbench",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 4 scenarios, strata = domain",
+  "strata": {
+    "email": 1,
+    "essay": 1,
+    "slack": 1,
+    "social": 1
+  },
+  "source_version": "sha256:08ac606f94366ab2 sha256:1e39f32e74c46a0c sha256:7176c92871dbfd60 sha256:94572d41726426f5",
+  "ids": [
+    "slopbench-email.thankyou.001",
+    "slopbench-essay.commentary.002",
+    "slopbench-slack.question.002",
+    "slopbench-social.x_post.002"
+  ]
+}

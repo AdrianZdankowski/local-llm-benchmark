@@ -1,0 +1,31 @@
+{
+  "source": "ideafix",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 20 briefs (generated with n_samples 1)",
+  "strata": {
+    "all": 20
+  },
+  "source_version": "sha256:e5b19495983348e9+sha256:71cf95770a397bc2",
+  "ids": [
+    "ideafix-brief-00",
+    "ideafix-brief-12",
+    "ideafix-brief-13",
+    "ideafix-brief-15",
+    "ideafix-brief-20",
+    "ideafix-brief-21",
+    "ideafix-brief-23",
+    "ideafix-brief-25",
+    "ideafix-brief-34",
+    "ideafix-brief-35",
+    "ideafix-brief-39",
+    "ideafix-brief-42",
+    "ideafix-brief-43",
+    "ideafix-brief-44",
+    "ideafix-brief-46",
+    "ideafix-brief-48",
+    "ideafix-brief-49",
+    "ideafix-brief-52",
+    "ideafix-brief-55",
+    "ideafix-brief-57"
+  ]
+}

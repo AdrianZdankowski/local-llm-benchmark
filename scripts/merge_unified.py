@@ -1,6 +1,6 @@
+from __future__ import annotations
 import argparse
 import sys
-from __future__ import annotations
 from pathlib import Path
 from collections import Counter
 from pydantic import ValidationError  # noqa: E402

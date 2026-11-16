@@ -1,0 +1,36 @@
+{
+  "source": "eqbench4",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 24 scenarios: 12 generated + 12 hand-authored, hand-authored stratified by task_type",
+  "strata": {
+    "generated": 12,
+    "hand_authored": 12
+  },
+  "source_version": "git:github.com/EQ-bench/eqbench4@93dcb7f5d430433ad49d501e672a98bcff2c9678",
+  "ids": [
+    "033f064e-f007-4bad-9209-681699256ad2",
+    "396ee5af-fc78-4a72-9dfa-0fa1b6647a92",
+    "39e61933-e10b-4474-a97f-8ec6f7cb9474",
+    "58739507-f06a-418d-a53f-dda056a0c05d",
+    "5acf5f76-8319-4e41-8af7-ad57ea3c2ef0",
+    "6fa2dff8-42f5-4444-a701-07f2d0482d0c",
+    "92335f64-d39c-4d7c-b0f2-1a859bf9c0c6",
+    "9b1ff062-d744-4114-a229-d61c6ffc3be3",
+    "b0a55afd-b761-4bff-baf1-3de3023ace0d",
+    "b64d652c-fdec-42db-bd3c-885c6f61d725",
+    "d72a623c-d546-4ec6-912e-2c7fe815e657",
+    "f117117a-d5e3-4b82-bd5e-e61a6d4587df",
+    "hand_eta_004_charismatic_self_justifier_2ca0ef27",
+    "hand_eta_009_transactional_realist_1f56dc76",
+    "hand_eta_010_rejection_tester_c56cc8e6",
+    "hand_pin_011_senior_engineer_credit_2ca06e1b",
+    "hand_pin_013_founder_equity_promise_f38f5d4b",
+    "hand_pin_019_condo_board_delay_6a5013fa",
+    "hand_rd2_006_moral_exile_094ffa78",
+    "hand_rd2_007_health_forum_certainty_7df40385",
+    "hand_rd2_011_teacher_targeted_e93b3f5a",
+    "hand_se_026_trip_room_downgrade_32e2d1fc",
+    "hand_se_029_cool_friend_label_9a6a8095",
+    "hand_se_030_demotion_disguised_as_intimacy_58758438"
+  ]
+}
