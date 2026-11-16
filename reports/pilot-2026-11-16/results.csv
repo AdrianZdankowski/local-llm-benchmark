@@ -1,0 +1,45 @@
+model,role,benchmark,metric,higher_is_better,score,ci95_lo,ci95_hi,n_scored,n_pilot,n_errors,note
+qwen35-9b,tested,listqa,LLM-Judge-F1 (official aggregator),true,0.0651,0.0167,0.1220,20,20,0,
+gemma4-12b,tested,listqa,LLM-Judge-F1 (official aggregator),true,0.0768,0.0111,0.1560,20,20,0,
+gptoss-20b,tested,listqa,LLM-Judge-F1 (official aggregator),true,0.0882,0.0167,0.1791,20,20,0,
+gemma4-26b,tested,listqa,LLM-Judge-F1 (official aggregator),true,0.1448,0.0400,0.2699,20,20,0,
+qwen35-2b,anchor-weak,listqa,LLM-Judge-F1 (official aggregator),true,0.0818,0.0059,0.1817,20,20,0,
+claude-sonnet,reference-strong,listqa,LLM-Judge-F1 (official aggregator),true,0.3446,0.1896,0.5066,20,20,0,
+qwen35-9b,tested,wmt26,MetricX-24 hybrid XL error (0-25),false,6.2154,4.5353,7.9583,21,21,0,
+gemma4-12b,tested,wmt26,MetricX-24 hybrid XL error (0-25),false,7.1146,4.9007,9.5454,21,21,0,
+gptoss-20b,tested,wmt26,MetricX-24 hybrid XL error (0-25),false,7.4710,5.6600,9.3984,21,21,0,
+gemma4-26b,tested,wmt26,MetricX-24 hybrid XL error (0-25),false,6.8441,4.6228,9.1486,21,21,0,
+qwen35-2b,anchor-weak,wmt26,MetricX-24 hybrid XL error (0-25),false,12.1481,9.5402,14.7314,21,21,0,
+claude-sonnet,reference-strong,wmt26,MetricX-24 hybrid XL error (0-25),false,4.3318,3.1637,5.7560,21,21,1,
+qwen35-9b,tested,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,30.8681,17.0009,43.4766,4,4,0,
+gemma4-12b,tested,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,26.0883,9.0204,43.1562,4,4,0,
+gptoss-20b,tested,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,18.3473,8.3879,27.5570,4,4,0,
+gemma4-26b,tested,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,33.9149,24.0625,43.7674,4,4,0,
+qwen35-2b,anchor-weak,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,28.2257,12.8576,43.5938,4,4,0,
+claude-sonnet,reference-strong,slopbench,"Slop Index mechanical layer, mean of domain composites (0-100)",false,45.2436,39.3420,51.1452,4,4,0,
+qwen35-9b,tested,ideafix,diversity: mean min cosine distance between ideas,true,0.3355,0.2944,0.3740,20,20,0,
+gemma4-12b,tested,ideafix,diversity: mean min cosine distance between ideas,true,0.4174,0.3929,0.4426,20,20,0,
+gptoss-20b,tested,ideafix,diversity: mean min cosine distance between ideas,true,0.4133,0.3872,0.4378,20,20,0,
+gemma4-26b,tested,ideafix,diversity: mean min cosine distance between ideas,true,0.4367,0.4154,0.4580,20,20,0,
+qwen35-2b,anchor-weak,ideafix,diversity: mean min cosine distance between ideas,true,0.3091,0.2426,0.3654,20,20,0,
+claude-sonnet,reference-strong,ideafix,diversity: mean min cosine distance between ideas,true,0.3643,0.3372,0.3886,20,20,0,
+qwen35-9b,tested,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.6463,0.4448,0.8447,14,14,0,
+gemma4-12b,tested,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.7700,0.5935,0.9230,14,14,0,
+gptoss-20b,tested,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.6613,0.4708,0.8460,14,14,0,
+gemma4-26b,tested,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.7913,0.6530,0.9547,10,14,5,n_errors counts all 21 items incl. group A; 4 of the 14 B/C items were lost
+qwen35-2b,anchor-weak,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.7421,0.6418,0.8596,13,14,1,
+claude-sonnet,reference-strong,vaguebench,coverage F1 on groups B and C (official metric 3),true,0.6950,0.5266,0.8558,14,14,0,
+qwen35-9b,tested,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,0.9508,0.8942,1.0000,20,20,0,
+gemma4-12b,tested,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,0.8956,0.7684,0.9868,19,20,1,
+gptoss-20b,tested,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,0.6625,0.4667,0.8500,20,20,0,
+gemma4-26b,tested,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,0.9482,0.8886,1.0000,19,20,1,
+qwen35-2b,anchor-weak,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,0.6692,0.4833,0.8458,20,20,0,
+claude-sonnet,reference-strong,astra,"mean rule-based similarity (null = 0), errored scenarios excluded",true,,,,20,20,0,excluded: integration error in the endpoint serving this model; score not valid
+qwen35-9b,tested,toolbenchx,"exact match rate (baseline, no hint)",true,0.4444,0.1111,0.7778,9,9,5,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+gemma4-12b,tested,toolbenchx,"exact match rate (baseline, no hint)",true,0.6667,0.3333,1.0000,9,9,3,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+gptoss-20b,tested,toolbenchx,"exact match rate (baseline, no hint)",true,0.5556,0.2222,0.8889,9,9,4,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+gemma4-26b,tested,toolbenchx,"exact match rate (baseline, no hint)",true,0.1111,0.0000,0.3333,9,9,8,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+qwen35-2b,anchor-weak,toolbenchx,"exact match rate (baseline, no hint)",true,0.5556,0.2222,0.8889,9,9,4,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+claude-sonnet,reference-strong,toolbenchx,"exact match rate (baseline, no hint)",true,0.8889,0.6667,1.0000,9,9,1,n_errors = tasks with a non-empty harness error field (includes intended hazards and technical errors); all tasks are in the score
+qwen35-9b,tested,sequor,"pooled constraint-following rate over judged turns 1,10,...,50",true,0.6111,0.1667,1.0000,3,3,0,
+qwen35-2b,anchor-weak,sequor,"pooled constraint-following rate over judged turns 1,10,...,50",true,0.3889,0.1667,0.6667,3,3,0,

@@ -1,11 +1,11 @@
+from __future__ import annotations
 import sys
 import statistics
 import argparse
-from __future__ import annotations
 from collections import Counter, defaultdict
 from pathlib import Path
 from pydantic import ValidationError
-from mybench.adapters import ADAPTERS, Skips
+from mybench.adapters import ADAPTERS, FRESH_ADAPTERS, Skips
 from mybench.schema import Record
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,9 +18,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--sources",
         nargs="+",
-        choices=sorted(ADAPTERS),
+        choices=sorted({**ADAPTERS, **FRESH_ADAPTERS}),
         default=list(ADAPTERS),
-        help="sources to process (default: all)",
+        help="sources to process (default: all in ADAPTERS; FRESH_ADAPTERS only when listed)",
     )
     return p.parse_args()
 
@@ -35,7 +35,7 @@ def main() -> int:
 
     for name in args.sources:
         try:
-            for rec in ADAPTERS[name](args.raw_dir, skips):
+            for rec in {**ADAPTERS, **FRESH_ADAPTERS}[name](args.raw_dir, skips):
                 if rec.id in seen_ids:
                     print(f"[ERROR] {name}: duplicate id {rec.id}", file=sys.stderr)
                     errors += 1

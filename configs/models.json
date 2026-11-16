@@ -1,0 +1,80 @@
+{
+  "_note": "Models under test for the fresh-benchmark track. Keys are the model ids used by infra/llama_server/serve.sh (llama-server --alias) and by the harnesses (BENCH_MODEL). sampling = vendor-recommended non-thinking settings, set as llama-server defaults; chat_template_kwargs switch thinking off (gpt-oss and Muse: lowest reasoning level). Seed 20261116 is fixed server-side. knowledge_cutoff = cutoff stated by the vendor; null = not published (use the release date as the bound). Verify chat_template_kwargs against the GGUF chat template after download.",
+  "qwen35-9b": {
+    "name": "Qwen3.5-9B",
+    "role": "tested",
+    "gguf_repo": "unsloth/Qwen3.5-9B-GGUF",
+    "gguf_file": "Qwen3.5-9B-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "release": "2026-03-02",
+    "knowledge_cutoff": null,
+    "sampling": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
+    "chat_template_kwargs": {"enable_thinking": false}
+  },
+  "gemma4-12b": {
+    "name": "Gemma 4 12B IT",
+    "role": "tested",
+    "gguf_repo": "unsloth/gemma-4-12b-it-GGUF",
+    "gguf_file": "gemma-4-12b-it-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "release": "2026-06-03",
+    "knowledge_cutoff": "2025-01",
+    "sampling": {"temperature": 1.0, "top_p": 0.95, "top_k": 64, "min_p": 0.0},
+    "chat_template_kwargs": {"enable_thinking": false}
+  },
+  "gptoss-20b": {
+    "name": "gpt-oss-20b",
+    "role": "tested",
+    "gguf_repo": "ggml-org/gpt-oss-20b-GGUF",
+    "gguf_file": "gpt-oss-20b-MXFP4.gguf",
+    "quant": "MXFP4 (native release format; no Q4_K_M)",
+    "release": "2025-08-05",
+    "knowledge_cutoff": "2024-06",
+    "sampling": {"temperature": 1.0, "top_p": 1.0, "top_k": 0, "min_p": 0.0},
+    "chat_template_kwargs": {"reasoning_effort": "low"}
+  },
+  "gemma4-26b": {
+    "name": "Gemma 4 26B-A4B IT",
+    "role": "tested",
+    "gguf_repo": "unsloth/gemma-4-26B-A4B-it-GGUF",
+    "gguf_file": "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
+    "quant": "UD-Q4_K_M",
+    "release": "2026-04-02",
+    "knowledge_cutoff": "2025-01",
+    "sampling": {"temperature": 1.0, "top_p": 0.95, "top_k": 64, "min_p": 0.0},
+    "chat_template_kwargs": {"enable_thinking": false}
+  },
+  "qwen36-27b": {
+    "name": "Qwen3.6-27B",
+    "role": "tested",
+    "gguf_repo": "unsloth/Qwen3.6-27B-GGUF",
+    "gguf_file": "Qwen3.6-27B-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "release": "2026-04-22",
+    "knowledge_cutoff": null,
+    "sampling": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
+    "chat_template_kwargs": {"enable_thinking": false}
+  },
+  "muse-30b": {
+    "name": "Muse Glimmer 30B",
+    "role": "tested",
+    "gguf_repo": "meta-models/Muse-Glimmer-30B-GGUF",
+    "gguf_file": "Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "release": "2026-08-10",
+    "knowledge_cutoff": "2026-01-04",
+    "sampling": {"temperature": 1.0, "top_p": 0.95, "top_k": 64, "min_p": 0.0},
+    "chat_template_kwargs": {"reasoning_strength": "low"}
+  },
+  "qwen35-2b": {
+    "name": "Qwen3.5-2B",
+    "role": "anchor-weak",
+    "gguf_repo": "unsloth/Qwen3.5-2B-GGUF",
+    "gguf_file": "Qwen3.5-2B-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "release": "2026-03-02",
+    "knowledge_cutoff": null,
+    "sampling": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0},
+    "chat_template_kwargs": {"enable_thinking": false}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "source": "toolbenchx",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 9 tasks: 3 per split (mixture, parallel, sequential), hazard category proportional within a split",
+  "strata": {
+    "mixture": 3,
+    "parallel": 3,
+    "sequential": 3
+  },
+  "source_version": "hf:Foreverskyou/ToolBench-X@faaf5e8f7b71206c7fe60d015460dc5433fc0185 git:github.com/Foreverskyou/ToolBench-X@125c30611fbdf85d6e7bf5b4a22dceb5fa8da58d",
+  "ids": [
+    "mixture/Entertainment__Media/Streaming_watchlist_management/task_5",
+    "mixture/Government__Public_Services/Public_health_advisory_lookup/task_3",
+    "mixture/Health__Wellness/Stress_management_support/task_2",
+    "parallel/Commerce__Transactions/Cart_and_checkout_issue_resolution/task_2",
+    "parallel/Health__Wellness/Sleep_habit_monitoring/task_4",
+    "parallel/Health__Wellness/Wellness_goal_check-ins/task_2",
+    "sequential/Government__Public_Services/Court_and_civic_appointment_reminders/task_3",
+    "sequential/Health__Wellness/Medication_schedule_reminders/task_3",
+    "sequential/Health__Wellness/Recovery_and_rehabilitation_tracking/task_4"
+  ]
+}

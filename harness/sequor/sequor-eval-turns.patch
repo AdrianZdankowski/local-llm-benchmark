@@ -1,0 +1,99 @@
+diff --git a/multi_if/cli.py b/multi_if/cli.py
+index 9cfef6f..8cc9634 100644
+--- a/multi_if/cli.py
++++ b/multi_if/cli.py
+@@ -614,6 +614,7 @@ def evaluate(*,
+     max_tokens: int = 8192,
+     batch_size: int = 50,
+     max_concurrent: int = 100,
++    eval_turns: Optional[list[int]] = None,
+ ):
+     """Evaluate a single run's `chat/` folder using the given testset.
+ 
+@@ -658,6 +659,7 @@ def evaluate(*,
+                 judge=judge,
+                 run_name=run_dir.name,
+                 max_lines=max_turns,
++                eval_turns=eval_turns,
+             )
+ 
+     # Process in batches
+@@ -693,6 +695,7 @@ def evaluate_task(*,
+     max_tokens: int = 8192,
+     batch_size: int = 50,
+     max_concurrent: int = 100,
++    eval_turns: Optional[list[int]] = None,
+ ):
+     chat_dir = run_dir / "chat"
+     if not chat_dir.is_dir():
+@@ -726,6 +729,7 @@ def evaluate_task(*,
+                 run_name=run_dir.name,
+                 max_lines=max_turns,
+                 evaluate_task_correctness=True,
++                eval_turns=eval_turns,
+             )
+ 
+     total_files = len(conversations)
+diff --git a/multi_if/conversation.py b/multi_if/conversation.py
+index 1b84850..dee5d8e 100644
+--- a/multi_if/conversation.py
++++ b/multi_if/conversation.py
+@@ -346,6 +346,7 @@ def _is_context_length_error(error: Exception) -> bool:
+         "maximum context length",
+         "token count exceeds",
+         "requested token count",
++        "context size",  # llama.cpp llama-server: "the request exceeds the available context size"
+     ])
+ 
+ 
+diff --git a/multi_if/evaluation.py b/multi_if/evaluation.py
+index b5beda7..8321c6b 100644
+--- a/multi_if/evaluation.py
++++ b/multi_if/evaluation.py
+@@ -170,6 +170,7 @@ async def _evaluate_one(
+     run_name: str,
+     max_lines: int,
+     evaluate_task_correctness: bool = False,
++    eval_turns: Optional[list[int]] = None,
+ ):
+     # Check if evaluation already exists (resume functionality)
+     clean_name = str(relative_path.with_suffix(""))
+@@ -235,6 +236,7 @@ async def _evaluate_one(
+             save_path=save_path,
+             existing_report=existing_report,
+             evaluate_task_correctness=evaluate_task_correctness,
++            eval_turns=eval_turns,
+         )
+     except Exception as e:
+         print(
+@@ -283,6 +285,7 @@ async def evaluate_conversation_async(
+     save_path: Optional[Path] = None,
+     existing_report: Optional[EvaluationReport] = None,
+     evaluate_task_correctness: bool = False,
++    eval_turns: Optional[list[int]] = None,
+ ):
+     # Extract valid alternating user-assistant pairs
+     # Stop when we encounter non-alternating messages or reach the end
+@@ -319,8 +322,11 @@ async def evaluate_conversation_async(
+         user_prompt = user_msg["content"]
+         assert user_prompt == test_prompt["prompt"], f"User prompt does not match test prompt at index {i}."
+         assistant_response = postprocess_function(assistant_msg["content"])
+-        
+-        if evaluate_task_correctness:
++
++        if eval_turns is not None and (i + 1) not in eval_turns:
++            # Turn not selected for judging: keep a placeholder row (no judgments) so turn indices stay aligned
++            prompt_inputs.append((user_prompt, assistant_response, []))
++        elif evaluate_task_correctness:
+             # Extract task using process_prompt
+             task_text, _ = process_prompt(user_prompt)
+             
+@@ -408,7 +414,7 @@ async def evaluate_conversation_async(
+                 _save_prompt_evaluation(output_file, prompt_eval)
+             
+             # Add a small delay between turns to give the model server breathing room
+-            if not can_reuse and turn_idx < len(prompt_inputs) - 1:
++            if not can_reuse and constraints and turn_idx < len(prompt_inputs) - 1:
+                 await asyncio.sleep(0.5)
+     finally:
+         if output_file:

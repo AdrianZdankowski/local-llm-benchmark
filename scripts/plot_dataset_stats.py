@@ -1,9 +1,9 @@
+from __future__ import annotations
 import argparse
 import json
 import sys
 import matplotlib
 import matplotlib.pyplot as plt
-from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 from matplotlib.patches import Patch

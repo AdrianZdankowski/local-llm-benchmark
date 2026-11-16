@@ -1,0 +1,37 @@
+{
+  "source": "wmt26_humanref",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 7 paragraphs x 3 targets, strata = domain",
+  "strata": {
+    "en-cs/news": 4,
+    "en-cs/social": 3,
+    "en-de/news": 4,
+    "en-de/social": 3,
+    "en-et/news": 4,
+    "en-et/social": 3
+  },
+  "source_version": "sha256:80e19f1875bfed9e",
+  "ids": [
+    "wmt26_humanref-en_cs-news-heraldscotland.com.122957-p1",
+    "wmt26_humanref-en_cs-news-independent.621716-p2",
+    "wmt26_humanref-en_cs-news-independent.621897-p13",
+    "wmt26_humanref-en_cs-news-rte.en.ie.159850-p18",
+    "wmt26_humanref-en_cs-social-116261628446183895-p3",
+    "wmt26_humanref-en_cs-social-116308087427187775-p1",
+    "wmt26_humanref-en_cs-social-116325386819371396-p2",
+    "wmt26_humanref-en_de-news-heraldscotland.com.122957-p1",
+    "wmt26_humanref-en_de-news-independent.621716-p2",
+    "wmt26_humanref-en_de-news-independent.621897-p13",
+    "wmt26_humanref-en_de-news-rte.en.ie.159850-p18",
+    "wmt26_humanref-en_de-social-116261628446183895-p3",
+    "wmt26_humanref-en_de-social-116308087427187775-p1",
+    "wmt26_humanref-en_de-social-116325386819371396-p2",
+    "wmt26_humanref-en_et-news-heraldscotland.com.122957-p1",
+    "wmt26_humanref-en_et-news-independent.621716-p2",
+    "wmt26_humanref-en_et-news-independent.621897-p13",
+    "wmt26_humanref-en_et-news-rte.en.ie.159850-p18",
+    "wmt26_humanref-en_et-social-116261628446183895-p3",
+    "wmt26_humanref-en_et-social-116308087427187775-p1",
+    "wmt26_humanref-en_et-social-116325386819371396-p2"
+  ]
+}

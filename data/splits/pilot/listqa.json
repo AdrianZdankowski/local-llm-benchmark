@@ -1,0 +1,43 @@
+{
+  "source": "listqa",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 20 items, strata = category x prompt_type",
+  "strata": {
+    "Entertainment|multi-faceted": 2,
+    "Entertainment|single-faceted": 2,
+    "Food|single-faceted": 1,
+    "Lifestyle|multi-faceted": 1,
+    "Lifestyle|single-faceted": 1,
+    "Movies|multi-faceted": 2,
+    "Movies|single-faceted": 2,
+    "Places of Interest|single-faceted": 1,
+    "Politics|multi-faceted": 2,
+    "Politics|single-faceted": 2,
+    "Sports|multi-faceted": 1,
+    "Sports|single-faceted": 2,
+    "Travel|single-faceted": 1
+  },
+  "source_version": "sha256:ecbc816e1f15b0fc",
+  "ids": [
+    "listqa-all-0440",
+    "listqa-all-0845",
+    "listqa-all-1068",
+    "listqa-all-1731",
+    "listqa-all-1962",
+    "listqa-all-2735",
+    "listqa-all-2891",
+    "listqa-all-4037",
+    "listqa-all-4613",
+    "listqa-all-4912",
+    "listqa-all-5234",
+    "listqa-all-5325",
+    "listqa-all-6119",
+    "listqa-all-6441",
+    "listqa-all-6584",
+    "listqa-all-6974",
+    "listqa-all-7033",
+    "listqa-all-8039",
+    "listqa-all-8277",
+    "listqa-all-8782"
+  ]
+}

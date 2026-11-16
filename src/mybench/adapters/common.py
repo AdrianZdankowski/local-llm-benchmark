@@ -1,7 +1,7 @@
+from __future__ import annotations
 import csv
 import hashlib
 import json
-from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from functools import lru_cache

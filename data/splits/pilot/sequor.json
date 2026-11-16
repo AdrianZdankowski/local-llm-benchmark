@@ -1,0 +1,16 @@
+{
+  "source": "sequor",
+  "seed": 20261116,
+  "method": "pilot subset of the full split, kept from the original pilot: seeded (same seed) stratified draw with largest-remainder allocation, ties broken by a seeded shuffle; 3 conversations, strata = regime",
+  "strata": {
+    "add/step_size_5": 1,
+    "replace/step_size_5": 1,
+    "single": 1
+  },
+  "source_version": "git:github.com/deep-spin/SEQUOR@6574f28abcc128f2a497ef8a7bf5b628aa432903",
+  "ids": [
+    "add/step_size_5/conversation_82_1",
+    "replace/step_size_5/conversation_99_1",
+    "single/format-as-a-worksheet_1"
+  ]
+}

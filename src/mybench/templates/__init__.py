@@ -1,5 +1,5 @@
-import string
 from __future__ import annotations
+import string
 from collections.abc import Callable
 from typing import Any
 
@@ -75,3 +75,37 @@ def facts_split(
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": f"{context_document}\n\n{user_request}"},
     ]
+
+# Verbatim LISTQA_ZERO_SHOT_PROMPT from github.com/amazon-science/ListQA-Eval
+# (src/listqa_eval/prompts.py @ 83faa7c3a089a7c835c89f408f44b5b88ed27469).
+LISTQA_ZERO_SHOT_PROMPT = (
+    "Answer the question below by producing a list-formatted output, "
+    "lists can be formatted one of two ways:\n\n"
+    "For simple questions with few constraints requesting only main elements "
+    "and not requesting sub-elements, use the following format:\n"
+    "1. List Element 1\n"
+    "2. List Element 2\n\n"
+    "For complex questions asking for multiple factoids in addition to the "
+    "primary question, use the following format:\n"
+    "1. List Element 1\n"
+    "* Category 1: Sub-Element 1\n"
+    "* Category 2: Sub-Element 2\n\n"
+    "2. List Element2\n"
+    "* Category 1: Sub-Element 1\n"
+    "* Category 2: Sub-Element 2\n\n"
+    "All answers are bounded by 3 to 10 main elements, do not generate more "
+    "than 10 main elements in the list. Do not add any information that is "
+    "not asked for in the question.\n"
+    "Question: {question}"
+)
+
+@register("listqa-zero-shot")
+def listqa_zero_shot(*, user_request: str) -> Messages:
+    """ListQA official zero-shot prompt (one user turn, no system message)."""
+    return [{"role": "user", "content": LISTQA_ZERO_SHOT_PROMPT.format(question=user_request)}]
+
+@register("ideafix-control")
+def ideafix_control(*, control_prompt: str, user_request: str) -> Messages:
+    """IDEAFix "Prompt - Control condition / Alternative 1" with `[Brief context]` replaced by
+    the brief name, as in the official `Prompt.create_prompt_with_brief` (one user turn)."""
+    return [{"role": "user", "content": control_prompt.replace("[Brief context]", user_request)}]

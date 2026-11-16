@@ -1,0 +1,108 @@
+diff --git a/astra_tool_sandbox/cli/utils.py b/astra_tool_sandbox/cli/utils.py
+index 389a253..16617bf 100644
+--- a/astra_tool_sandbox/cli/utils.py
++++ b/astra_tool_sandbox/cli/utils.py
+@@ -2,6 +2,7 @@
+ # Copyright (C) 2026 Apple Inc. All Rights Reserved.
+ import argparse
+ import logging
++import os
+ import traceback
+ from collections import Counter, defaultdict
+ from enum import auto
+@@ -33,7 +34,7 @@ LLM_EVAL_TASK_KEY = "_llm_eval_task"
+ #: Wall-clock budget for scenario *playback*. Grading and the LLM judge both run
+ #: outside it — grading because it is deterministic CPU work, the judge because it is
+ #: a network call that could otherwise exhaust the budget it is being timed against.
+-PLAY_TIMEOUT_SECONDS = 180
++PLAY_TIMEOUT_SECONDS = int(os.environ.get("ASTRA_PLAY_TIMEOUT_SECONDS", "180"))
+ 
+ #: Separate backstop for rule-based grading. Deliberately far above what the heaviest
+ #: multi-milestone scenarios need: it exists only so a pathological milestone DFS
+@@ -74,7 +75,25 @@ def _lazy_factory(
+     return _ctor
+ 
+ 
++def _env_endpoint_factory(
++    module: str, klass: str, url_var: str, model_var: str, key_var: str
++) -> Callable[..., BaseRole]:
++    """OpenAI-compatible role whose endpoint/model/key come from env vars at construction."""
++
++    def _ctor(*args: Any, **user_kwargs: Any) -> BaseRole:
++        kwargs = {
++            "base_url": os.environ[url_var],
++            "model_name": os.environ[model_var],
++            "api_key": os.environ.get(key_var, "EMPTY"),
++        }
++        return _lazy_factory(module, klass, kwargs=kwargs)(*args, **user_kwargs)
++
++    return _ctor
++
++
+ class RoleImplType(StrEnum):
++    BenchEndpoint = auto()
++    JudgeEndpoint = auto()
+     Hermes = auto()
+     Gorilla = auto()
+     GPT_4_o_2024_05_13 = auto()
+@@ -119,6 +138,14 @@ class RoleImplType(StrEnum):
+ 
+ 
+ AGENT_TYPE_TO_FACTORY: dict[RoleImplType, Callable[..., BaseRole]] = {
++    # Model under test at $BENCH_BASE_URL (e.g. llama-server --jinja)
++    RoleImplType.BenchEndpoint: _env_endpoint_factory(
++        "astra_tool_sandbox.roles.openai_api_agent",
++        "OpenAIAPIAgent",
++        "BENCH_BASE_URL",
++        "BENCH_MODEL",
++        "BENCH_API_KEY",
++    ),
+     # GPT family
+     RoleImplType.GPT_4_o_2024_05_13: _lazy_factory(
+         "astra_tool_sandbox.roles.openai_api_agent", "GPT_4_o_2024_05_13_Agent"
+@@ -290,6 +317,14 @@ AGENT_TYPE_TO_FACTORY: dict[RoleImplType, Callable[..., BaseRole]] = {
+ 
+ 
+ USER_TYPE_TO_FACTORY: dict[RoleImplType, Callable[..., BaseRole]] = {
++    # User simulator at $JUDGE_BASE_URL (must support OpenAI tools/tool_calls)
++    RoleImplType.JudgeEndpoint: _env_endpoint_factory(
++        "astra_tool_sandbox.roles.openai_api_user",
++        "OpenAIAPIUser",
++        "JUDGE_BASE_URL",
++        "JUDGE_MODEL",
++        "JUDGE_API_KEY",
++    ),
+     # OpenAI (default)
+     RoleImplType.GPT_4_o_2024_11_20: _lazy_factory(
+         "astra_tool_sandbox.roles.openai_api_user", "GPT_4_o_2024_11_20_User"
+diff --git a/astra_tool_sandbox/common/scenario.py b/astra_tool_sandbox/common/scenario.py
+index bf7db4c..700fd60 100644
+--- a/astra_tool_sandbox/common/scenario.py
++++ b/astra_tool_sandbox/common/scenario.py
+@@ -100,7 +100,7 @@ def _time_budget(
+     cannot be installed. Scenario workers are `multiprocessing` processes running on
+     their main thread, so the budgets do apply in a normal run.
+     """
+-    if not seconds:
++    if not seconds or not hasattr(signal, "SIGALRM"):  # SIGALRM absent on Windows
+         yield
+         return
+ 
+diff --git a/astra_tool_sandbox/roles/openai_api_agent.py b/astra_tool_sandbox/roles/openai_api_agent.py
+index c312c5f..3ff738d 100644
+--- a/astra_tool_sandbox/roles/openai_api_agent.py
++++ b/astra_tool_sandbox/roles/openai_api_agent.py
+@@ -212,6 +212,13 @@ class OpenAIAPIAgent(BaseRole):
+         Returns:
+             OpenAI API chat completion object
+         """
++        # [llmbench] Many local chat templates (Qwen, Gemma) reject system messages after the first
++        # position. Merge every system message into a single leading system message.
++        sys_parts = [m["content"] for m in openai_messages if m.get("role") == "system" and m.get("content")]
++        if sys_parts and any(m.get("role") == "system" for m in openai_messages[1:]):
++            openai_messages = [{"role": "system", "content": "\n\n".join(sys_parts)}] + [
++                m for m in openai_messages if m.get("role") != "system"
++            ]
+         with all_logging_disabled():
+             create_kwargs: dict[str, Any] = {
+                 "model": self.model_name,

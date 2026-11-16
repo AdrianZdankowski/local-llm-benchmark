@@ -220,3 +220,23 @@ __marimo__/
 .streamlit/secrets.toml
 
 docs/
+
+# Fresh benchmark sources: licensed raw data, fetched by scripts/download_fresh_sources.py
+data/raw/listqa/
+data/raw/vaguebench/
+data/raw/slopbench/
+data/raw/ideafix/
+# Local build output of the fresh sources (build_dataset.py --out-dir data/unified_fresh)
+data/unified_fresh/
+# Local clones of third-party scorers (ListQA-Eval, slop-index, MetricX) and run outputs/scores
+external/
+runs/
+# Harness-only benchmark data (fetched from the official sources, see harness/*/README.md)
+data/raw/toolbenchx/
+data/raw/sequor/
+data/raw/astra/
+data/raw/eqbench4/
+# Local model files and llama.cpp builds (see infra/llama_server/README.md)
+models/
+llama.cpp/
+*.gguf

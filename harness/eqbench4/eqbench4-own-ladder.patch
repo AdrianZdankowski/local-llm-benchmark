@@ -1,0 +1,286 @@
+diff --git a/config.local.yaml b/config.local.yaml
+new file mode 100644
+index 0000000..f7533bd
+--- /dev/null
++++ b/config.local.yaml
+@@ -0,0 +1,61 @@
++# EQ-Bench 4 config for our own ladder (local addition, see harness/eqbench4/README.md).
++# Model under test: llama.cpp llama-server at ${BENCH_BASE_URL} (one model loaded at a time;
++# the model id must match the llama-server model name and IS the ladder name in results).
++# Persona simulator + pairwise judge: an LLM judge behind an OpenAI-compatible endpoint at ${JUDGE_BASE_URL}.
++# Backend is inferred as "custom" (OpenAI chat/completions) for both URLs.
++# extra_body (local patch) = sampling (+ chat_template_kwargs for Qwen) from configs/models.json;
++# thinking-off settings are also enforced by infra/llama_server/serve.sh. Overrides harness temp 0.7.
++
++api:
++  max_retries: 7
++  backoff_factor: 2.0
++  site_url: http://localhost
++  evaluated_model_timeout: 600   # also used for persona calls
++  rubric_judge_timeout: 300
++  elo_judge_timeout: 300
++
++model_creds:
++  # simulator, judge and the strong anchor: rename this key to the judge endpoint's model name
++  judge-model:
++    api_key: sk-local
++    base_url: ${JUDGE_BASE_URL}
++
++  # tested models + weak anchor: llama-server at BENCH_BASE_URL (swap the loaded GGUF per run)
++  qwen35-9b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0, chat_template_kwargs: {enable_thinking: false}}
++  gemma4-12b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 1.0, top_p: 0.95, top_k: 64}
++  gptoss-20b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 1.0, top_p: 1.0, chat_template_kwargs: {reasoning_effort: low}}
++  gemma4-26b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 1.0, top_p: 0.95, top_k: 64}
++  qwen36-27b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0, chat_template_kwargs: {enable_thinking: false}}
++  muse-30b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 1.0, top_p: 0.95, top_k: 64}
++  qwen35-2b:
++    api_key: sk-local
++    base_url: ${BENCH_BASE_URL}
++    extra_body: {temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0.0, chat_template_kwargs: {enable_thinking: false}}
++
++persona_models: []
++evaluated_model: null
++judge_models: []
++persona_model_ensemble_mode: split
++judge_model_ensemble_mode: split
++
++# Summaries are not used for scoring; disabled.
++enable_model_summary: false
++summary_model: judge-model
+diff --git a/run_pair_plan.py b/run_pair_plan.py
+new file mode 100644
+index 0000000..5e0544e
+--- /dev/null
++++ b/run_pair_plan.py
+@@ -0,0 +1,170 @@
++"""Fixed-budget pairwise ladder for a small closed set of models (local addition).
++
++Replaces the official adaptive "insert one model into the big ladder" scheduler
++(ranking/config.py SAMPLING_SCHEDULE) with a deterministic round-robin plan:
++
++  stage 1  every pair of models is judged on a balanced subset of scenarios
++           (tested-tested: --n-tt, tested-anchor: --n-ta, anchor-anchor: --n-aa;
++           each subset is half generated / half hand-authored scenarios and the
++           subsets rotate so every scenario is used about equally often)
++  stage 2  (optional) extra scenarios for the closest adjacent pairs in the
++           current ranking, until --max-judge-calls is reached
++
++Each matchup = 2 judge calls (AB + BA order), single judge, official prompt,
++official weighting and the official soft Bradley-Terry solver.
++Results go to <results-dir>/ladder_pairwise.json (run id "ladder"); ratings to
++<results-dir>/elo_results.json. Re-running resumes (existing matchups skipped).
++
++  python run_pair_plan.py --results-dir R --models a,b,c --anchors x,y --judge J --dry-run
++"""
++
++from __future__ import annotations
++
++import argparse
++import itertools
++import json
++import logging
++import random
++from pathlib import Path
++
++from eqbench.core.config import JudgeConfig, _find_config_file, _load_model_creds, load_yaml_config
++from eqbench.ranking.elo_runner import compute_elo_only, print_elo_summary
++from eqbench.ranking.matchup_selection import create_matchup_signature
++from eqbench.ranking.pairwise_judging import run_pairwise_comparisons_parallel
++from eqbench.ranking.results_manager import EloResultsManager
++
++SEED = 20261116
++LADDER_FILE = "ladder_pairwise.json"
++LADDER_RUN = "ladder"
++DATASET = Path(__file__).parent / "src" / "eqbench" / "datasets" / "test.json"
++
++
++def interleaved_scenarios(rnd: random.Random) -> list[str]:
++    """Shuffle generated and hand-authored ids separately and interleave them,
++    so any contiguous window of even length is exactly 50/50."""
++    docs = json.loads(DATASET.read_text(encoding="utf-8"))["docs"]
++    gen = [d["id"] for d in docs if d["source_type"] == "generated"]
++    hand = [d["id"] for d in docs if d["source_type"] == "hand_authored"]
++    rnd.shuffle(gen)
++    rnd.shuffle(hand)
++    return [x for pair in zip(gen, hand) for x in pair]
++
++
++def build_plan(models, anchors, n_tt, n_ta, n_aa) -> list[tuple[str, str, list[str]]]:
++    rnd = random.Random(SEED)
++    order = interleaved_scenarios(rnd)
++    pairs = list(itertools.combinations(sorted(models + anchors), 2))
++    rnd.shuffle(pairs)
++    plan, offset = [], 0
++    for a, b in pairs:
++        n_anchor = (a in anchors) + (b in anchors)
++        n = [n_tt, n_ta, n_aa][n_anchor]
++        window = [order[(offset + i) % len(order)] for i in range(n)]
++        offset = (offset + n + (n % 2)) % len(order)  # keep windows starting on even index
++        plan.append((a, b, window))
++    return plan
++
++
++def extra_plan(plan, ratings, n_extra, budget_matchups) -> list[tuple[str, str, list[str]]]:
++    """Stage 2: unused scenarios for adjacent pairs with the smallest rating gap."""
++    rnd = random.Random(SEED + 1)
++    order = interleaved_scenarios(rnd)
++    used = {(a, b): set(s) for a, b, s in plan}
++    ladder = sorted(ratings, key=ratings.get)
++    adjacent = sorted(
++        (tuple(sorted((ladder[i], ladder[i + 1]))) for i in range(len(ladder) - 1)),
++        key=lambda p: abs(ratings[p[0]] - ratings[p[1]]),
++    )
++    out = []
++    for a, b in adjacent:
++        if budget_matchups <= 0:
++            break
++        free = [s for s in order if s not in used.get((a, b), set())]
++        take = free[: min(n_extra, budget_matchups)]
++        budget_matchups -= len(take)
++        out.append((a, b, take))
++    return out
++
++
++def run_plan(plan, results_dir, judge, parallel, timeout, batch=40) -> int:
++    manager = EloResultsManager(results_dir)
++    results = manager.collect_scenario_results()
++    existing = manager.get_existing_matchups()
++    tasks = []
++    for a, b, scenarios in plan:
++        for sid in scenarios:
++            if create_matchup_signature(a, b, sid, 0) in existing:
++                continue
++            ra, rb = results.get(a, {}).get(sid, {}), results.get(b, {}).get(sid, {})
++            if 0 not in ra or 0 not in rb:
++                logging.warning("missing completed transcript: %s / %s / %s", a, b, sid)
++                continue
++            tasks.append({"model_a": a, "model_b": b, "scenario_id": sid, "iter_idx": 0,
++                          "data_a": ra[0], "data_b": rb[0]})
++    logging.info("%d matchups to judge (%d judge calls)", len(tasks), 2 * len(tasks))
++    done = 0
++    for i in range(0, len(tasks), batch):
++        comps = run_pairwise_comparisons_parallel(
++            tasks[i:i + batch], [judge], "split", max_workers=parallel, timeout=timeout)
++        ok = [c for c in comps if "error" not in c and "error" not in c.get("aggregated", {})]
++        done += manager.add_comparisons_to_run(results_dir / LADDER_FILE, LADDER_RUN, ok)
++    return done
++
++
++def main() -> int:
++    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
++    p.add_argument("--results-dir", type=Path, required=True)
++    p.add_argument("--models", required=True, help="comma-separated tested model ids (as in results __meta__)")
++    p.add_argument("--anchors", default="", help="comma-separated anchor model ids")
++    p.add_argument("--judge", default="judge-model", help="model_creds id of the pairwise judge")
++    p.add_argument("--config", type=Path, default=None)
++    p.add_argument("--n-tt", type=int, default=60)
++    p.add_argument("--n-ta", type=int, default=30)
++    p.add_argument("--n-aa", type=int, default=20)
++    p.add_argument("--stage", type=int, choices=[1, 2], default=1)
++    p.add_argument("--n-extra", type=int, default=40, help="stage 2: extra scenarios per adjacent pair")
++    p.add_argument("--max-judge-calls", type=int, default=3000, help="total budget incl. stage 1")
++    p.add_argument("--parallel", type=int, default=4)
++    p.add_argument("--timeout", type=int, default=300)
++    p.add_argument("--dry-run", action="store_true", help="print the plan; no LLM calls")
++    args = p.parse_args()
++    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
++
++    models = [m.strip() for m in args.models.split(",") if m.strip()]
++    anchors = [m.strip() for m in args.anchors.split(",") if m.strip()]
++    plan = build_plan(models, anchors, args.n_tt, args.n_ta, args.n_aa)
++    stage1_calls = 2 * sum(len(s) for _, _, s in plan)
++    if stage1_calls > args.max_judge_calls:
++        raise SystemExit(f"stage 1 needs {stage1_calls} judge calls > budget {args.max_judge_calls}")
++
++    if args.stage == 2:
++        ratings = {m: r["elo"] for m, r in compute_elo_only(args.results_dir).items()}
++        if not ratings:
++            raise SystemExit("stage 2 needs stage 1 comparisons first")
++        budget = (args.max_judge_calls - stage1_calls) // 2
++        plan = extra_plan(plan, ratings, args.n_extra, budget)
++
++    usage = {}
++    for a, b, s in plan:
++        for m in (a, b):
++            usage[m] = usage.get(m, 0) + len(s)
++    print(f"stage {args.stage}: {len(plan)} pairs, {sum(len(s) for _, _, s in plan)} matchups, "
++          f"{2 * sum(len(s) for _, _, s in plan)} judge calls (stage-1 total {stage1_calls})")
++    for a, b, s in plan:
++        print(f"  {a} vs {b}: {len(s)}")
++    print("matchups per model:", json.dumps(usage))
++    if args.dry_run:
++        return 0
++
++    cfg_path = _find_config_file(args.config)
++    if cfg_path is None:
++        raise SystemExit("config.yaml not found")
++    judge = JudgeConfig.from_model_id(args.judge, _load_model_creds(load_yaml_config(cfg_path)))
++    added = run_plan(plan, args.results_dir, judge, args.parallel, args.timeout)
++    logging.info("saved %d new comparisons", added)
++    print_elo_summary(compute_elo_only(args.results_dir))
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/src/eqbench/core/api_client.py b/src/eqbench/core/api_client.py
+index 7b30b77..10d7de9 100644
+--- a/src/eqbench/core/api_client.py
++++ b/src/eqbench/core/api_client.py
+@@ -15,6 +15,10 @@ import requests
+ logger = logging.getLogger(__name__)
+ 
+ _OPENROUTER_REASONING_REQUIRED: set[str] = set()
++
++# Local addition: per-model extra request fields from config.yaml `model_creds.<id>.extra_body`
++# (e.g. vendor sampling, chat_template_kwargs for llama.cpp). Merged last into OpenAI-style payloads.
++EXTRA_BODY_BY_MODEL: dict[str, dict[str, Any]] = {}
+ _OPENROUTER_REASONING_REQUIRED_LOCK = Lock()
+ 
+ # Pattern to match thinking tags: <think>, <thinking>, <reasoning> and their closing tags
+@@ -507,6 +511,8 @@ def _build_openai_request(
+             # ``reasoning`` object above.
+             payload["reasoning_effort"] = reasoning_config["effort"]
+ 
++    payload.update(EXTRA_BODY_BY_MODEL.get(model, {}))
++
+     return headers, payload, api_url
+ 
+ 
+diff --git a/src/eqbench/core/config.py b/src/eqbench/core/config.py
+index 50c6c88..58f74dd 100644
+--- a/src/eqbench/core/config.py
++++ b/src/eqbench/core/config.py
+@@ -355,10 +355,14 @@ def _load_model_creds(yaml_config: dict[str, Any]) -> dict[str, ModelCredentials
+     Returns:
+         Dict mapping model IDs to their credentials
+     """
++    from eqbench.core.api_client import EXTRA_BODY_BY_MODEL
++
+     model_creds: dict[str, ModelCredentials] = {}
+ 
+     creds_config = yaml_config.get("model_creds", {})
+     for model_id, creds_dict in creds_config.items():
++        if creds_dict.get("extra_body"):
++            EXTRA_BODY_BY_MODEL[model_id] = dict(creds_dict["extra_body"])
+         try:
+             model_creds[model_id] = ModelCredentials.from_dict(creds_dict)
+         except ValueError as e:
